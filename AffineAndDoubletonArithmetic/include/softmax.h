@@ -1,8 +1,15 @@
+/////////////////////////////////////////////////////////////////////////////
+/// @file softmax.h
+///
+/// @author (C) 2024 Daniel Wilczak
+///
+/// This file is distributed under the terms of the GNU General Public License.
+
 #ifndef __DW_SOFTMAX_H__
 #define __DW_SOFTMAX_H__
-
 #include "capd/capdlib.h"
 
+/// Implementation of softmax function for vecvtors and interval vectors.
 template<class Scalar>
 capd::vectalg::Vector <Scalar,0> softmax(capd::vectalg::Vector <Scalar,0> u){
   // take max of components

@@ -1,3 +1,13 @@
+/////////////////////////////////////////////////////////////////////////////
+/// @file main.cpp
+
+/// @author (C) 2024 Daniel Wilczak
+///
+/// This file is distributed under the terms of the GNU General Public License.
+
+/// This file contains implementation of tests, which compare bounds 
+/// on a neural network output computed by means of LB, IBP, DA and AA.
+
 #include <iostream>
 #include <random>
 #include "capd/capdlib.h"
@@ -9,6 +19,12 @@ using namespace capd;
 
 #define LOGGER(x) cout << (#x) << "=" << x << endl;
 
+/// Computation of a bound on a neural netowrk output using all four methods: IBP, DA, AA and LB.
+/// Also LB is computed. 
+/// @param nn[in] - a fully connected neural network
+/// @param x[in] - a point, which is the centre of a box
+/// @param e[in] - size of the box centred at x
+/// @param N[in] - number of random points for LB method
 void innTest(FullyConnectedNeuralNetwork& nn, DVector x, double e, int N){
   std::default_random_engine generator;
   std::uniform_real_distribution<double> distribution(-e,e);
@@ -44,10 +60,11 @@ void innTest(FullyConnectedNeuralNetwork& nn, DVector x, double e, int N){
   LOGGER(yRand);
 }
 
-void innDoubletonTest(FullyConnectedNeuralNetwork& nn, DVector x, double e, int N){
-  std::default_random_engine generator;
-  std::uniform_real_distribution<double> distribution(-e,e);
-  
+/// Computation of a bound on a fully connected neural netowrk output using DA.
+/// @param nn[in] - a fully connected neural network
+/// @param x[in] - a point, which is the centre of a box
+/// @param e[in] - size of the box centred at x
+void innDoubletonTest(FullyConnectedNeuralNetwork& nn, DVector x, double e){
   // box centred at x of size [-e,e] in each coordinate
   IVector box = IVector(x) + interval(-e,e);
 
@@ -57,7 +74,12 @@ void innDoubletonTest(FullyConnectedNeuralNetwork& nn, DVector x, double e, int 
   IVector yDltn = d.toVector();
   LOGGER(yDltn);
 }
-
+/// Computation of a bound on a convolutional neural netowrk output using: IBP, AA and LB.
+/// Also LB is computed. 
+/// @param nn[in] - a convolutional neural network
+/// @param x[in] - a point, which is the centre of a box
+/// @param e[in] - size of the box centred at x
+/// @param N[in] - number of random points for LB method
 void innTest(ConvolutionalNeuralNetwork& nn, DTensor x, double e, int N){
   std::default_random_engine generator;
   std::uniform_real_distribution<double> distribution(-e,e);
@@ -99,13 +121,13 @@ void runFullyConnectedTest(const char* weights, const char* dataset, int dim, in
   }
 }
 
-void runConvolutionalDoubletonTest(const char* weights, const char* dataset, int dim, int N, double eps, int num, bool addSoftMaxLayer=true){
+void runConvolutionalDoubletonTest(const char* weights, const char* dataset, int dim, double eps, int num, bool addSoftMaxLayer=true){
   FullyConnectedNeuralNetwork nn;
   parseFromFile(nn,weights,addSoftMaxLayer);
   auto pts = readDataSet(dataset,dim);
   for(auto u : pts){
     cout << "#######################\nTest for : " << num << endl;
-    innDoubletonTest(nn,u,eps,N);   
+    innDoubletonTest(nn,u,eps);   
   }
 }
 
@@ -124,70 +146,6 @@ void runConvolutionalTest(const char* weights, const std::map<int,int>& strides,
   }
 }
 
-void FullyConnectedDirectionalDerivative(const char* weights, const char* dataset, const char* directions, int dim, double eps, int num, bool addSoftMaxLayer=true){
-  FullyConnectedNeuralNetwork nn;
-  std::default_random_engine generator;
-  std::uniform_real_distribution<double> distribution(-eps,eps);
-
-  parseFromFile(nn,weights,addSoftMaxLayer);
-  auto pts = readDataSet(dataset,dim);
-  auto dirs = readDataSet(directions,dim);
-
-  auto itPts = pts.begin();
-  auto itDirs = dirs.begin();
-
-  while(itPts != pts.end() || itDirs != dirs.end()) {
-    cout << "#######################\nTest for : " << num << endl;
-    IVector mu = IVector(*itPts);
-    IVector dir = IVector(*itDirs);
-    
-    // box centred at x of size [-e,e] in each coordinate
-    IVector box = IVector(mu) + dir*interval(-eps,eps);
-    // direct evaluation in interval arithmetics
-    
-    IVector yIntv = nn.eval(box);
-    LOGGER(yIntv);
-    
-    AffineExpr expr;
-    AffineFunc e = expr.newVar(interval(-eps,eps)); // zaburzenie jest jedyna zmienna
-    AffineVector x = mu+e*dir;
-    IVector yAffn = toIVector(nn.eval(x));
-    LOGGER(yAffn);
-    
-    IMatrix A(mu.dimension(),mu.dimension());
-    A.column(0) = dir;
-    IVector r(mu.dimension());
-    r[0] = interval(-eps,eps);
-    
-    Doubleton d(mu,A,r);
-    d = nn.eval(d);
-    IVector yDltn = d.toVector();
-    LOGGER(yDltn);
-
-    // lower bound on the size of output 
-    // computed as the interval hull of NN outpus for N randomly chosen points from the box.
-    IVector yRand(nn.eval(mu));
-    for(int i=0;i<1000;++i){
-      DVector z = *itPts;
-      DVector rand_dir = *itDirs;
-
-      for(int j=0;j<x.dimension();++j)
-        z[j] += distribution(generator)*rand_dir[j];
-      yRand = intervalHull(yRand,IVector(nn.eval(z)));
-    }
-    LOGGER(yRand);
-
-    if(itPts != pts.end())
-    {
-        ++itPts;
-    }
-    if(itDirs != dirs.end())
-    {
-        ++itDirs;
-    } 
-  }
-}
-
 int main(){
   cout.precision(4);
   
@@ -201,22 +159,21 @@ int main(){
   // strides[0] = 1; strides[2] = 2; strides[4] = 1; strides[6] = 2;
   // strides[0] = 1; strides[2] = 1; strides[4] = 2; strides[6] = 1; strides[8] = 1;
 
-  std::int8_t num=20;
+  int num=20;
   double log_start = std::log10(1e-5);
   double log_end = std::log10(1e-2);
-  double eps;
   double delta = (log_end - log_start) / (num - 1);
 
   int start=0;
   int end=19;
 
   for (int i = start; i <= end; ++i) {
-      eps = std::pow(10, log_start + i * delta);
+      double eps = std::pow(10, log_start + i * delta);
 
       // cout.sync_with_stdio(false);
       // runConvolutionalTest("./data/cifar/cnn_small_eps_0_001.txt",strides,"./data/cifar/the_most_uncertain_points_eps_0_001.txt",1000,eps,i,true);
       runFullyConnectedTest("./data/digits/mlp_eps_0_05.txt", "./data/digits/the_most_uncertain_points_eps_0_05.txt", 64, 1000, eps, i, true);
-      // runConvolutionalDoubletonTest("./data/mnist/cnn_small_eps_0_01_toeplitz.txt", "./data/mnist/the_most_uncertain_points_eps_0_01_toeplitz.txt", 784, 1000, eps, i, true);
+      // runConvolutionalDoubletonTest("./data/mnist/cnn_small_eps_0_01_toeplitz.txt", "./data/mnist/the_most_uncertain_points_eps_0_01_toeplitz.txt", 784, eps, i, true);
 
   }
 }

@@ -1,59 +1,20 @@
+/////////////////////////////////////////////////////////////////////////////
+/// @file Doubleton.cpp
+///
+/// @author (C) 2024 Daniel Wilczak
+///
+/// This file is distributed under the terms of the GNU General Public License.
+
+/// This file contains implementation of doubleton arithmetics.
+
 #include "Doubleton.h"
 #include "softmax.h"
 using namespace capd;
 
-IMatrix findQ(const IMatrix& B, const IVector& q, const IVector& z){
-  // first we sort variables in z be descending width of components    
-  const int d = z.dimension();
-  IMatrix Q(d,d);
-  Q.setToIdentity();
-  return Q; /////////////////////////////////////////////////////////////////////////////  NAPRAWIC DOBOR MACIERZY Q, o dziwo ID dziala dobrze
-  
-  std::vector< std::pair<double,int> > perm(d);
-  for(int i=0;i<d;++i)
-    perm[i] = i < q.dimension()? 
-      std::make_pair( (width(z[i]) + B.column(i).euclNorm()*width(q[i]) ).rightBound(),i) : 
-      std::make_pair(width(z[i]),i);
-  std::sort(perm.rbegin(),perm.rend());
-  
-  IMatrix M = midMatrix(B);
-  // We have two cases depending on the shape (d,m) of B
-  for(int i=0;i<d;++i){
-    IVector column = perm[i].second < M.numberOfColumns() ? M.column(perm[i].second) : Q.column(i);
-    
-    for(int j=0;j<i;++j){
-      interval p = column*Q.column(j);
-      Q.column(i) -= Q.column(j)*p;
-    }
-    interval n = Q.column(i).euclNorm();
-    if(!isSingular(n)){
-      if(n.leftBound()>n.rightBound()){
-        std::cout << Q.column(i);
-        exit(0);
-      }
-      Q.column(i)/=n;
-      ++i;
-      continue;
-    } else {
-      throw "singular";
-      M.column(perm[i].second)[i]+= 1;
-      Q.column(i) = M.column(perm[i].second);
-    }
-  }
-  return Q;
-}
-  
 void absorb(const IVector& delta, IMatrix& Q, IVector& q){
-  IVector z = Q*q+delta;
-  IMatrix B = Q;
-  Q = findQ(B,q,delta);
-  IMatrix QT = Transpose(Q);
-  q = (QT*B)*q + QT*delta;    
-  intersection(q,QT*z,q);
+  q = Q*q+delta;
+  Q.setToIdentity();
 }
-//  void absorb(const IVector& delta, IMatrix& Q, IVector& q){
-//   q += delta;    
-// }
 
 Doubleton relu(Doubleton d){
   IVector u = d.toVector();

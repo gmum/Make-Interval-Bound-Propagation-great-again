@@ -1,3 +1,10 @@
+/////////////////////////////////////////////////////////////////////////////
+/// @file NeuralNetwork.h
+///
+/// @author (C) 2024 Daniel Wilczak
+///
+/// This file is distributed under the terms of the GNU General Public License.
+
 #ifndef __CAPD_NEURAL_NETWORK_LAYER__
 #define __CAPD_NEURAL_NETWORK_LAYER__
 
@@ -6,6 +13,10 @@
 #include "softmax.h"
 #include "relu.h"
 
+/// Abstract interfeace of a layer in a neural network. 
+/// Inherited classes should implement evaluation of a layer for various 
+/// types of subsets of R^n, especially interval vectors, Affine vectors, 
+/// doubletons and tensors.
 struct NeuralNetworkLayer{
   virtual AffineVector eval(const AffineVector&) const = 0;
   virtual Doubleton eval(const Doubleton&) const = 0;
@@ -19,6 +30,8 @@ struct NeuralNetworkLayer{
   virtual void setStride(int s){}
 };
 
+
+/// Implementation of affine layer
 struct AffineLayer : public NeuralNetworkLayer{
   AffineLayer(const capd::IMatrix& A, const capd::IVector& b) 
     : iA(A), ib(b),  
@@ -40,6 +53,7 @@ struct AffineLayer : public NeuralNetworkLayer{
   capd::DVector db;
 };
 
+/// Implementation of ReLU layer
 struct ReluLayer : public NeuralNetworkLayer{
   AffineVector eval(const AffineVector& x) const { return relu(x); }
   Doubleton eval(const Doubleton& x) const { return relu(x);}
@@ -61,6 +75,7 @@ struct ReluLayer : public NeuralNetworkLayer{
   }
 };
 
+/// Implementation of softmax layer
 struct SoftMaxLayer : public NeuralNetworkLayer{
   AffineVector eval(const AffineVector& x) const { return softmax(x); }
   Doubleton eval(const Doubleton& x) const {  return softmax(x); }
@@ -72,6 +87,7 @@ struct SoftMaxLayer : public NeuralNetworkLayer{
   ATensor eval(const ATensor& in) const { throw std::logic_error("SoftMaxLayer::eval(const ATensor& in)"); }
 };
 
+/// Implementation of convolutional layer
 struct ConvolutionalLayer : public NeuralNetworkLayer{  
   ConvolutionalLayer(const DTensor& t, const capd::DVector& bias) 
     : dWeights(t), dBias(bias), stride(1)
@@ -98,7 +114,7 @@ struct ConvolutionalLayer : public NeuralNetworkLayer{
   }
 
   template<class Tensor, class Bias, class Input>
-static Input eval(const Tensor& weights, const Bias& bias, const Input& in, int stride) {
+  static Input eval(const Tensor& weights, const Bias& bias, const Input& in, int stride) {
     const int kh = weights[0][0].numberOfRows();  // Kernel height
     const int kw = weights[0][0].numberOfColumns();  // Kernel width
     const int h = 1 + (in[0][0].numberOfRows() - kh) / stride;  // Output height
@@ -123,13 +139,10 @@ static Input eval(const Tensor& weights, const Bias& bias, const Input& in, int 
                     M[r][s] = M[r][s] + bias[j];
                 }
             }
-
-            b.push_back(M);
+          b.push_back(M);
         }
-
         result.push_back(b);
     }
-
     return result;
 }
 
@@ -142,6 +155,7 @@ static Input eval(const Tensor& weights, const Bias& bias, const Input& in, int 
   int stride;
 };
 
+/// A data structure that stores layers of a neural network
 struct NeuralNetwork{
 public:
   void add(NeuralNetworkLayer* layer){
@@ -157,6 +171,9 @@ public:
   std::vector<NeuralNetworkLayer*> layers;
 };
 
+/// Implementation of fully connected neural network.
+/// The class provides a generic method for evaluation of a neural network 
+/// for different subsets of R^n, such as interval vectors, doubletons, affine sets.
 struct FullyConnectedNeuralNetwork : public NeuralNetwork{
 public:
   template<class T>
@@ -167,6 +184,7 @@ public:
   }
 };
 
+/// An auxiliary class that flattens tensor to a vector
 struct Flatten{
   static std::vector<capd::DVector> flatten(const DTensor& t) { return f<capd::DVector>(t); }
   static std::vector<capd::IVector> flatten(const ITensor& t) { return f<capd::IVector>(t); }
@@ -188,6 +206,10 @@ private:
   }  
 };
 
+
+/// Implementation of convolutional  neural network.
+/// The class provides a generic method for evaluation of a neural network 
+/// for different subsets of R^n, such as interval vectors, doubletons, affine sets.
 struct ConvolutionalNeuralNetwork : public NeuralNetwork{
   template<class T>
   auto eval(T x) -> decltype(Flatten::flatten(x)){

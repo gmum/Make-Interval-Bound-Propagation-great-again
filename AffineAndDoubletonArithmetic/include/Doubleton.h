@@ -1,7 +1,17 @@
+/////////////////////////////////////////////////////////////////////////////
+/// @file Doubleton.h
+///
+/// @author (C) 2024 Daniel Wilczak
+///
+/// This file is distributed under the terms of the GNU General Public License.
+
 #ifndef __DW_DOUBLETON__
 #define __DW_DOUBLETON__
 #include "capd/capdlib.h"
-
+/**
+ * This file contains definition of the class Doubleton, which is a data structure to represent subsets of R^n.
+ * 
+ */ 
 class Doubleton{
 public:
   Doubleton(const capd::IVector& x)

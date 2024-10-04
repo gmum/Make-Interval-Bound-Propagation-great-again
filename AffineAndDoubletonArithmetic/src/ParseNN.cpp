@@ -1,3 +1,13 @@
+/////////////////////////////////////////////////////////////////////////////
+/// @file ParseNN.cpp
+
+/// @author (C) 2024 Daniel Wilczak
+///
+/// This file is distributed under the terms of the GNU General Public License.
+
+/// This file contains implementation of auxiliary routines for parsing a neural network 
+/// from text files in various formats, including json.
+
 #include <fstream>
 #include <sstream>
 #include <rapidjson/document.h>

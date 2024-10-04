@@ -1,3 +1,10 @@
+/////////////////////////////////////////////////////////////////////////////
+/// @file AffineFunc.h
+///
+/// @author (C) 2024 Daniel Wilczak
+///
+/// This file is distributed under the terms of the GNU General Public License.
+
 #ifndef __CAPD_AFFINE_FUNC__
 #define __CAPD_AFFINE_FUNC__
 
@@ -42,13 +49,14 @@ class AffineFunc{
     friend AffineFunc operator*(const AffineFunc&, const AffineFunc&);
 
     friend AffineFunc relu(const AffineFunc& f);
+    friend capd::vectalg::Vector<AffineFunc,0> softmax(capd::vectalg::Vector<AffineFunc,0> z);
 
     typedef std::map<int,capd::interval> CoeffsType;
     AffineFunc& operator+=(const AffineFunc&);
     
     capd::interval toInterval() const;
     void addVar(const capd::interval& c);
-  //private:
+  private:
 
     AffineFunc(AffineExpr* expr) : expr(expr) {}
     AffineExpr* expr = nullptr;

@@ -1,3 +1,12 @@
+/////////////////////////////////////////////////////////////////////////////
+/// @file AffineFunc.cpp
+///
+/// @author (C) 2024 Daniel Wilczak
+///
+/// This file is distributed under the terms of the GNU General Public License.
+
+/// This file contains implementation of affine arithmetics.
+
 #include "AffineFunc.h"
 #include "capd/vectalg/Vector.hpp"
 #include "capd/vectalg/Matrix.hpp"

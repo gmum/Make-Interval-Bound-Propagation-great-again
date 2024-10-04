@@ -1,7 +1,18 @@
+/////////////////////////////////////////////////////////////////////////////
+/// @file Tensor.h
+///
+/// @author (C) 2024 Daniel Wilczak
+///
+/// This file is distributed under the terms of the GNU General Public License.
 #include <vector>
 
 #ifndef __CAPD_TENSOR_H__
 #define __CAPD_TENSOR_H__
+/// This file implements basic operations on tensors, such as
+/// - conversion from double tensor to interval tensor
+/// - addition of tensors
+/// - interval hull of tensors
+
 
 typedef std::vector<std::vector<capd::DMatrix>> DTensor;
 typedef std::vector<std::vector<capd::IMatrix>> ITensor;
