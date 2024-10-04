@@ -1,0 +1,19 @@
+{
+    "dataset_name": ["digits"],
+    "optimizer_name": ["adam"],
+    "arch": ["mlp"],
+    "training": [false],
+    "epochs": [50],
+    "batch_size": [32],
+    "num_layers": [4],
+    "dim_hidden": [100],
+    "device": ["cpu"],
+    "seed": [1],
+    "lr": [0.001],
+    "epsilon": [0.001],
+    "kappa": [0.5],
+    "weight_decay": [5e-4],
+    "val_set_size": [0.1],
+    "data_path": ["./Data"],
+    "weight_path": ["./SavedModels/digits_weights/mlp_eps_0_001/best_weights.pth"]
+}
