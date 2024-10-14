@@ -146,34 +146,69 @@ void runConvolutionalTest(const char* weights, const std::map<int,int>& strides,
   }
 }
 
-int main(){
-  cout.precision(4);
-  
-  //~ runFullyConnectedTest("./data/neural_net_weights.txt","./data/dataset.txt",2,10000,1e-1,false);
-  //~ runFullyConnectedTest("./data/digits_neural_net_weights.txt","./data/digits_dataset.txt",64,10000,1e-1,true);
-  //~ runFullyConnectedTest("./data/MNIST_neural_net_weights.txt","./data/MNIST_dataset.txt",784,10000,1e-3,true);
-  
+int main(int argc, char *argv[]) {
+    std::cout << "argc: " << argc << "\n";
+    for(int i = 0; i < argc; ++i){
+        std::cout << "argv[" << i << "]: " << argv[i] << "\n";
+    }
 
-  std::map<int,int> strides;
-  strides[0] = 2; strides[2] = 1;
-  // strides[0] = 1; strides[2] = 2; strides[4] = 1; strides[6] = 2;
-  // strides[0] = 1; strides[2] = 1; strides[4] = 2; strides[6] = 1; strides[8] = 1;
+    std::string function_name = argv[1];
+    std::string input_path = argv[2];
+    std::string output_path = argv[3];
 
-  int num=20;
-  double log_start = std::log10(1e-5);
-  double log_end = std::log10(1e-2);
-  double delta = (log_end - log_start) / (num - 1);
+    double log_start = 0.0, log_end = 0.0;
+    try {
+        log_start = std::log10(std::stod(argv[4]));  
+        log_end = std::log10(std::stod(argv[5])); 
+    } catch(const std::invalid_argument&) {
+        std::cerr << "Error: Invalid log_start or log_end value.\n";
+        return 1;
+    } catch(const std::out_of_range&) {
+        std::cerr << "Error: log_start or log_end value out of range.\n";
+        return 1;
+    }
 
-  int start=0;
-  int end=19;
+    std::map<int,int> strides;
+    int input_size = 0;
 
-  for (int i = start; i <= end; ++i) {
-      double eps = std::pow(10, log_start + i * delta);
+    if (function_name == "runFullyConnectedTest") {
+        input_size = std::stoi(argv[6]);
+        std::cout << ": " << input_size << std::endl;
+    } else {
+        std::string cnn_arch_type = argv[6];
 
-      // cout.sync_with_stdio(false);
-      // runConvolutionalTest("./data/cifar/cnn_small_eps_0_001.txt",strides,"./data/cifar/the_most_uncertain_points_eps_0_001.txt",1000,eps,i,true);
-      runFullyConnectedTest("./data/digits/mlp_eps_0_05.txt", "./data/digits/the_most_uncertain_points_eps_0_05.txt", 64, 1000, eps, i, true);
-      // runConvolutionalDoubletonTest("./data/mnist/cnn_small_eps_0_01_toeplitz.txt", "./data/mnist/the_most_uncertain_points_eps_0_01_toeplitz.txt", 784, eps, i, true);
+        if (cnn_arch_type == "cnn_small") {
+            strides[0] = 2; strides[2] = 1;
+        } else if (cnn_arch_type == "cnn_medium") {
+            strides[0] = 1; strides[2] = 2; strides[4] = 1; strides[6] = 2;
+        } else if (cnn_arch_type == "cnn_large") {
+            strides[0] = 1; strides[2] = 1; strides[4] = 2; strides[6] = 1; strides[8] = 1;
+        }
+    }
 
-  }
+    std::cout.precision(4);
+    const std::int8_t num = 20;
+    double delta = (log_end - log_start) / (num - 1);
+    const int start = 0;
+    const int end = num - 1;
+
+    for(int i = start; i <= end; ++i){
+        double eps = std::pow(10, log_start + i * delta);
+
+        if(function_name == "runFullyConnectedTest"){
+            runFullyConnectedTest(input_path.c_str(), output_path.c_str(), input_size, 1000, eps, i, true);
+        }
+        else if(function_name == "runConvolutionalTest"){
+            runConvolutionalTest(input_path.c_str(), strides, output_path.c_str(), 1000, eps, i, true);
+        }
+        else if(function_name == "runConvolutionalDoubletonTest"){
+            runConvolutionalDoubletonTest(input_path.c_str(), output_path.c_str(), input_size, eps, i, true);
+        }
+        else{
+            std::cerr << "Error: Unknown function '" << function_name << "'\n";
+            return 1;
+        }
+    }
+
+    return 0;
 }
