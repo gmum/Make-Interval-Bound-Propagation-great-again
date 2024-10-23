@@ -9,9 +9,6 @@
 #include <rapidjson/document.h>
 #include "NeuralNetwork.h"
 
-/// This file contains declarations of auxiliary routines for parsing a neural network 
-/// from text files in various formats, including json.
-
 #ifndef __CAPD_PARSE_NN__
 #define __CAPD_PARSE_NN__
 
@@ -21,7 +18,7 @@ capd::DVector parseBias(rapidjson::Document& d, const char* key);
 capd::DMatrix parseMatrix(rapidjson::Document& d, const char* key);
 DTensor parseTensor(rapidjson::Document& d, const char* key);
 
-std::list<capd::DVector> readDataSet(const char* filename, int dim);
-std::list<DTensor> readDataSet(const char* filename);
+std::list<capd::DVector> readFullyConnectedDataSet(const char* filename);
+std::list<DTensor> readConvolutionalDataSet(const char* filename);
 
 #endif

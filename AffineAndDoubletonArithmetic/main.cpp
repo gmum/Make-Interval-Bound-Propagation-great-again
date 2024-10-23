@@ -111,20 +111,20 @@ void innTest(ConvolutionalNeuralNetwork& nn, DTensor x, double e, int N){
 }
 
 
-void runFullyConnectedTest(const char* weights, const char* dataset, int dim, int N, double eps, int num, bool addSoftMaxLayer=true){
+void runFullyConnectedTest(const char* weights, const char* dataset, int N, double eps, int num, bool addSoftMaxLayer=true){
   FullyConnectedNeuralNetwork nn;
   parseFromFile(nn,weights,addSoftMaxLayer);
-  auto pts = readDataSet(dataset,dim);
+  auto pts = readFullyConnectedDataSet(dataset);
   for(auto u : pts){
     cout << "#######################\nTest for : " << num << endl;
     innTest(nn,u,eps,N);   
   }
 }
 
-void runConvolutionalDoubletonTest(const char* weights, const char* dataset, int dim, double eps, int num, bool addSoftMaxLayer=true){
+void runConvolutionalDoubletonTest(const char* weights, const char* dataset, double eps, int num, bool addSoftMaxLayer=true){
   FullyConnectedNeuralNetwork nn;
   parseFromFile(nn,weights,addSoftMaxLayer);
-  auto pts = readDataSet(dataset,dim);
+  auto pts = readFullyConnectedDataSet(dataset);
   for(auto u : pts){
     cout << "#######################\nTest for : " << num << endl;
     innDoubletonTest(nn,u,eps);   
@@ -138,7 +138,7 @@ void runConvolutionalTest(const char* weights, const std::map<int,int>& strides,
   for(auto i : strides)
     nn.getLayer(i.first)->setStride(i.second);
   
-  auto pts = readDataSet(dataset);
+  auto pts = readConvolutionalDataSet(dataset);
  
   for(auto u : pts){
     cout << "#######################\nTest for : " << num << endl;
@@ -169,20 +169,17 @@ int main(int argc, char *argv[]) {
     }
 
     std::map<int,int> strides;
-    int input_size = 0;
 
-    if (function_name == "runFullyConnectedTest" || function_name == "runConvolutionalDoubletonTest") {
-        input_size = std::stoi(argv[6]);
-    } else {
-        std::string cnn_arch_type = argv[6];
+    if (function_name == "runConvolutionalTest") {
+      std::string cnn_arch_type = argv[6];
 
-        if (cnn_arch_type == "cnn_small") {
-            strides[0] = 2; strides[2] = 1;
-        } else if (cnn_arch_type == "cnn_medium") {
-            strides[0] = 1; strides[2] = 2; strides[4] = 1; strides[6] = 2;
-        } else if (cnn_arch_type == "cnn_large") {
-            strides[0] = 1; strides[2] = 1; strides[4] = 2; strides[6] = 1; strides[8] = 1;
-        }
+      if (cnn_arch_type == "cnn_small") {
+          strides[0] = 2; strides[2] = 1;
+      } else if (cnn_arch_type == "cnn_medium") {
+          strides[0] = 1; strides[2] = 2; strides[4] = 1; strides[6] = 2;
+      } else if (cnn_arch_type == "cnn_large") {
+          strides[0] = 1; strides[2] = 1; strides[4] = 2; strides[6] = 1; strides[8] = 1;
+      }
     }
 
     std::cout.precision(4);
@@ -195,13 +192,13 @@ int main(int argc, char *argv[]) {
         double eps = std::pow(10, log_start + i * delta);
 
         if(function_name == "runFullyConnectedTest"){
-            runFullyConnectedTest(input_path.c_str(), output_path.c_str(), input_size, 1000, eps, i, true);
+            runFullyConnectedTest(input_path.c_str(), output_path.c_str(), 1000, eps, i, true);
         }
         else if(function_name == "runConvolutionalTest"){
             runConvolutionalTest(input_path.c_str(), strides, output_path.c_str(), 1000, eps, i, true);
         }
         else if(function_name == "runConvolutionalDoubletonTest"){
-            runConvolutionalDoubletonTest(input_path.c_str(), output_path.c_str(), input_size, eps, i, true);
+            runConvolutionalDoubletonTest(input_path.c_str(), output_path.c_str(), eps, i, true);
         }
         else{
             std::cerr << "Error: Unknown function '" << function_name << "'\n";

@@ -124,8 +124,6 @@ def save_weights2txt(path_to_weights: str,
         json.dump(weights_dict, outfile)
 
 def save_data2txt(data: Iterable[torch.Tensor], path_to_save: str, 
-              neural_net: torch.nn.Module,
-              eps: float,
               mode: str = "digits",
               use_toeplitz_transform: bool = True,
               n_points_to_save: int = 10) -> None:
@@ -141,12 +139,6 @@ def save_data2txt(data: Iterable[torch.Tensor], path_to_save: str,
 
         path_to_save: str
             Path where teh dataset should be saved.
-
-        neural_net: torch.nn.Module
-            Neural network architecture with loaded weights.
-
-        eps: float
-            Radii of an interval.
 
         mode: bool
             If an MLP is used by C++ scripts, then data are saved
@@ -173,50 +165,19 @@ def save_data2txt(data: Iterable[torch.Tensor], path_to_save: str,
         "svhn"
     ]
 
-    if mode == "digits":
-        with open(path_to_save, 'w') as out:
-            writer = csv.writer(out, delimiter=' ')
-            writer.writerow("First 64 values per row - input vector, y_true, last 10 values - neural net output logits. 75 values altogether per row.")
-
-            for idx, (X_data, y_data) in enumerate(data):
-                eps_tensor = eps * torch.ones_like(X_data)
-                _, _, mu_pred, _ = neural_net(X_data, eps_tensor, use_softmax=True)
-                
-                if len(X_data.shape) == 2:
-                    X_data = X_data.squeeze(0)
-                input, output = X_data.detach().numpy(), mu_pred.detach().numpy()
-                row = list(input) + [y_data.item()] + list(output)
-                writer.writerow(row)
-
-                if idx == n_points_to_save-1:
-                    break
-    elif use_toeplitz_transform:
-        with open(path_to_save, 'w') as out:
-            writer = csv.writer(out, delimiter=' ')
-            writer.writerow("Flattend input")
-            
-            for idx, (X_data, y_data) in enumerate(data):
-                eps_tensor = eps * torch.ones_like(X_data)
-                _, _, mu_pred, _ = neural_net(X_data, eps_tensor, use_softmax=True)
-                
-                input, output = X_data.flatten().detach().numpy(), mu_pred.detach().numpy()
-                row = list(input) + [y_data.item()] + list(output)
-                writer.writerow(row)
-
-                if idx == n_points_to_save-1:
-                    break
-    else:
-        input_output_dict = {}
-        for idx, (X_data, y_data) in enumerate(data):
-            eps_tensor = eps * torch.ones_like(X_data)
+    input_output_dict = {}
+    for idx, (X_data, _) in enumerate(data):
+        if use_toeplitz_transform:
+            input_output_dict[f"input_{idx}"] = X_data.flatten().unsqueeze(0).detach().numpy().tolist()
+        else:
             input_output_dict[f"input_{idx}"] = X_data.detach().numpy().tolist()
 
-            if idx == n_points_to_save-1:
-                break
+        if idx == n_points_to_save-1:
+            break
 
-        # Convert and write JSON object to file
-        with open(path_to_save, "w") as out:
-            json.dump(input_output_dict, out)
+    # Convert and write JSON object to file
+    with open(path_to_save, "w") as out:
+        json.dump(input_output_dict, out)
 
 def create_toeplitz_1_ch(kernel: torch.Tensor, input_size: Tuple[int], stride: Tuple[int]) -> torch.Tensor:
     """

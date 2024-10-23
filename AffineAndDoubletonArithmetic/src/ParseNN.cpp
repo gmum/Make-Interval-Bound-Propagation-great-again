@@ -11,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
 #include "NeuralNetwork.h"
 
 using namespace std;
@@ -91,27 +92,55 @@ void parseFromFile(NeuralNetwork& nn, const char* filename, bool addSoftMaxLayer
     nn.add(new SoftMaxLayer());
 }
 
-list<DVector> readDataSet(const char* filename, int dim){
-  list<DVector> result;
-  string s;
-  ifstream in(filename);
-  getline(in,s);
-  
-  while(true){
-    in.get();
-    getline(in,s);
-    istringstream sin(s);
-    DVector u(dim);
-    for(int i=0;i<dim;++i)
-      sin >> u[i];
-    if(in.eof()) break;
-    result.push_back(u);
-  }
-  in.close();
-  return result;
+list<DVector> readFullyConnectedDataSet(const char* filename) {
+    // Result list of DVectors
+    list<DVector> result;
+
+    // Open file stream and use RapidJSON to parse
+    ifstream ifs(filename);
+    if (!ifs.is_open()) {
+        cerr << "Could not open file: " << filename << endl;
+        return result;
+    }
+    
+    // Wrap the file stream into an input stream for RapidJSON
+    IStreamWrapper isw(ifs);
+    Document doc;
+    doc.ParseStream(isw);
+
+    // Check if the JSON is an object
+    if (!doc.IsObject()) {
+        cerr << "JSON parsing error: Root is not an object" << endl;
+        return result;
+    }
+
+    // Iterate through each key-value pair in the JSON
+    for (auto& member : doc.GetObject()) {
+        const Value& array = member.value;
+
+        // Ensure each value is an array of arrays
+        if (array.IsArray() && array[0].IsArray()) {
+            for (const auto& innerArray : array.GetArray()) {
+                // Get the dimension of the vector
+                size_t dim = innerArray.Size();
+
+                // Create a DVector and fill it with values from the JSON
+                DVector u(dim);
+                for (size_t i = 0; i < dim; ++i) {
+                    u[i] = innerArray[i].GetDouble();  // Assuming DVector supports this
+                }
+
+                // Add the vector to the result list
+                result.push_back(u);
+            }
+        }
+    }
+
+    ifs.close();
+    return result;
 }
 
-list<DTensor> readDataSet(const char* filename){
+list<DTensor> readConvolutionalDataSet(const char* filename){
   Document document;
   ifstream in(filename);
   string s;
