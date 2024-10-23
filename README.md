@@ -8,7 +8,7 @@ This paper demonstrates that IBP is sub-optimal in the first case due to its sus
 ## Teaser
 The Affine Arithmetic (AA) method is able to reduce the wrapping effect compared to the Interval Bound Propagation (IBP) method.
 
-![Working scheme of the AA and IBP methods](./src/teaser.png)
+![Working scheme of the AA and IBP methods](./teaser.png)
 
 ## Environment
 1. Install [requirements](http://capd.ii.uj.edu.pl/html/capd_requirements.html) neccessary to build the [CAPD](https://github.com/CAPDGroup/CAPD) library. This library enables implementing methods described in our paper. 
@@ -35,7 +35,7 @@ In general, to run the script, you need to convert the dataset and neural networ
 
 When the weights and data points are saved in <code>.txt</code> format, you can run the <code>main.cpp</code> file to calculate optimal bounds. After compiling the script using the <code>make</code> command, you can run the compiled file from the command line using two command patterns:
 * <code>./your_program method path_to_weights.txt path_to_dataset.txt eps_start eps_end arch_type</code> when <code>method</code> is <code>runConvolutionalTest</code>.
-* <code>./your_program method path_to_weights.txt path_to_dataset.txt eps_start eps_end </code> when <code>method</code> is <code>runFullyConnectedTest</code> or <code>runConvolutionalDoubletonTest</code>.
+* <code>./your_program method path_to_weights.txt path_to_dataset.txt eps_start eps_end input_size</code> when <code>method</code> is <code>runFullyConnectedTest</code> or <code>runConvolutionalDoubletonTest</code>.
 
 The parameters are described below:
 * <code>method</code> - one of three functions (<code>runFullyConnectedTest</code>, <code>runConvolutionalTest</code>, <code>runConvolutionalDoubletonTest</code>) to indicate which method should be used.
@@ -43,6 +43,7 @@ The parameters are described below:
 * <code>path_to_dataset.txt</code> - path to the dataset saved with the <code>.txt</code> extension.
 * <code>eps_start</code> - float, the starting value of perturbation size applied to the data.
 * <code>eps_end</code> - float, the ending value of perturbation size applied to the data.
+* <code>input_size</code> - integer, the dimension of the data. This parameter is used only when fully connected neural networks are applied.
 * <code>arch_type</code> - type of architecture used: <code>cnn_small</code>, <code>cnn_medium</code>, <code>cnn_large</code>. These architectures are described in our paper.
 
 In the <code>Experiments</code> folder, there are <code>.json</code> files where one can define a set of hyperparameters to be used in the training process. Vanilla training will be run with the <code>epsilon</code> hyperparameter set to 0. To perform the training, one needs to invoke <code>python train.py --config=<path_to_config_file></code>.
