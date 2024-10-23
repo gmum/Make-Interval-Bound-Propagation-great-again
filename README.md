@@ -13,7 +13,8 @@ The Affine Arithmetic (AA) method is able to reduce the wrapping effect compared
 ## Environment
 1. Install [requirements](http://capd.ii.uj.edu.pl/html/capd_requirements.html) neccessary to build the [CAPD](https://github.com/CAPDGroup/CAPD) library. This library enables implementing methods described in our paper. 
 2. Build the CAPD library as it is described [here](https://github.com/CAPDGroup/CAPD).
-3. Use the <code>environment.yml</code> file to create a conda environment with the necessary libraries: <code>conda env create -f environment.yml</code>. These Python libraries enable neural network training by both standard and IBP training.
+3. Install [rapidjson](https://rapidjson.org/) to read datasets from <code>.txt</code> files.
+4. Use the <code>environment.yml</code> file to create a conda environment with the necessary libraries: <code>conda env create -f environment.yml</code>. These Python libraries enable neural network training by both standard and IBP training.
 
 ## Datasets
 For the experiments and ablation study, we use 4 publicly available datasets:
