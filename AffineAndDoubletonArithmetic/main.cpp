@@ -171,9 +171,8 @@ int main(int argc, char *argv[]) {
     std::map<int,int> strides;
     int input_size = 0;
 
-    if (function_name == "runFullyConnectedTest") {
+    if (function_name == "runFullyConnectedTest" || function_name == "runConvolutionalDoubletonTest") {
         input_size = std::stoi(argv[6]);
-        std::cout << ": " << input_size << std::endl;
     } else {
         std::string cnn_arch_type = argv[6];
 
