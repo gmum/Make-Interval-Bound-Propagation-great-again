@@ -22,7 +22,6 @@ IMatrix findQ(const IMatrix& B, const IVector& q, const IVector& z){
     perm[i] = i < q.dimension()? 
       std::make_pair( (width(z[i]) + B.column(i).euclNorm()*width(q[i]) ).rightBound(),i) : 
       std::make_pair(width(z[i]),i);
-  std::sort(perm.rbegin(),perm.rend());
   
   IMatrix M = midMatrix(B);
   for(int i=0;i<d;++i){
@@ -51,12 +50,7 @@ IMatrix findQ(const IMatrix& B, const IVector& q, const IVector& z){
 }
   
 void absorb(const IVector& delta, IMatrix& Q, IVector& q){
-  IVector z = Q*q+delta;
-  IMatrix B = Q;
-  Q = findQ(B,q,delta);
-  IMatrix QT = Transpose(Q);
-  q = (QT*B)*q + QT*delta;    
-  intersection(q,QT*z,q);
+  q += matrixAlgorithms::gauss(Q,delta);    
 }
 
 Doubleton relu(Doubleton d){
@@ -102,6 +96,7 @@ Doubleton softmax(const Doubleton& d){
   for(unsigned i=0;i<dim;++i){
     R = capd::max(R,rightBound(d.x[i]));
   }
+
   IVector g(dim);
   for(int i=0;i<dim;++i){
     for(int j=0;j<dim;++j){
