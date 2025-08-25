@@ -1,0 +1,16 @@
+defaults:
+  - _self_
+  - network: mlp
+  - dataset: mnist_eran
+  - method: composer_ibp
+  - exp: get_output_bounds
+
+fabric:
+  _target_: lightning.Fabric
+  num_nodes: 1
+  devices: 1
+  accelerator: cpu
+
+wandb:
+  entity: ${oc.env:WANDB_ENTITY}
+  project: ${oc.env:WANDB_PROJECT}

@@ -1,0 +1,12 @@
+dataset:
+  type: mnist
+  data_path: ./data/mnist
+  split_ratio: [0.9, 0.1]
+  flatten: false
+  seed: 1
+  download: true
+
+train_batch_size: 4
+val_batch_size: 1
+test_batch_size: 1
+num_workers: 4

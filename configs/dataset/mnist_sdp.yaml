@@ -1,0 +1,5 @@
+_target_: torch.utils.data.DataLoader
+dataset:
+  _target_: dataset.MNIST_ERAN_SDP
+  data_path: ${oc.env:DATA_DIR}/sdp/mnist
+batch_size: 1

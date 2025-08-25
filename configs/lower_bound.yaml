@@ -1,0 +1,16 @@
+defaults:
+  - _self_
+  - network: mnist_cnn_a_adv
+  - dataset: mnist_sdp
+  - method: composer_lower_bound
+  - exp: get_output_bounds
+
+fabric:
+  _target_: lightning.Fabric
+  num_nodes: 1
+  devices: 1
+  accelerator: cpu
+
+wandb:
+  entity: ${oc.env:WANDB_ENTITY}
+  project: ${oc.env:WANDB_PROJECT}

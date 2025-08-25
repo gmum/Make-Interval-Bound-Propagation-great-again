@@ -1,0 +1,7 @@
+_target_: network.Conv4Layers
+in_channels: 1
+dim_out: 10
+input_width: 28
+input_height: 28
+width: 8
+linear_size: 256

@@ -1,0 +1,8 @@
+_partial_: True
+_target_: method.Composer
+
+plugins:
+  - _target_: method.AffineNN
+    optimize_bounds: False
+    gradient_iter: 0
+    lr: null

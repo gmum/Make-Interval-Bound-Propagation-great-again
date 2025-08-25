@@ -1,0 +1,3 @@
+_target_: network.ConvBigMNIST
+dim_out: 10
+model_path: ${oc.env:MODEL_DIR}/mnist_conv_big_diffai.pth

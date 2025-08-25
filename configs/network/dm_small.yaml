@@ -1,0 +1,5 @@
+_target_: network.DMSmall
+in_channels: 1
+dim_out: 10
+input_width: 28
+input_height: 28

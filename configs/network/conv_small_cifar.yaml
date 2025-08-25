@@ -1,0 +1,3 @@
+_target_: network.ConvSmallCIFAR
+dim_out: 10
+model_path: ${oc.env:MODEL_DIR}/cifar_conv_small_pgd.pth

@@ -1,0 +1,7 @@
+.vscode/
+data/cifar10
+data/mnist
+.env
+outputs
+wandb
+__pycache__/

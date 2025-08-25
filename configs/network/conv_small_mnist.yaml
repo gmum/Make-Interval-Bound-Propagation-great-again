@@ -1,0 +1,3 @@
+_target_: network.ConvSmallMNIST
+dim_out: 10
+model_path: ${oc.env:MODEL_DIR}/mnist_conv_small_nat.pth

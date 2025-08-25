@@ -1,0 +1,27 @@
+defaults:
+  - _self_
+  - network: dm_small
+  - dataset: mnist
+  - method: composer_affine_arithmetic
+  - exp: train
+
+training:
+  warmup_epochs: 10
+  schedule_epochs_after_warmup: 50
+  epochs: 200
+  lr: 5e-4
+  use_scheduler: True
+  kappa_end: 0.5
+  eps_train: 0.2
+  eps_test: 0.1
+  n_steps: 4
+
+fabric:
+  _target_: lightning.Fabric
+  num_nodes: 1
+  devices: 1
+  accelerator: cpu
+
+wandb:
+  entity: ${oc.env:WANDB_ENTITY}
+  project: ${oc.env:WANDB_PROJECT}

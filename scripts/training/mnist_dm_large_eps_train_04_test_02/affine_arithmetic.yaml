@@ -1,0 +1,107 @@
+method: grid
+metric:
+  name: val/verified_error
+  goal: minimize
+
+parameters:
+
+  dataset:
+    value: mnist
+  method:
+    value: composer_affine_arithmetic
+  network:
+    value: dm_large
+  exp:
+    value: train
+
+  ### Dataset parameters
+  dataset.dataset.type:
+    value: mnist
+  dataset.dataset.data_path:
+    value: ./data/mnist
+  dataset.dataset.split_ratio:
+    value: [0.9, 0.1]
+  dataset.dataset.flatten:
+    value: false
+  dataset.dataset.seed:
+    value: 1
+  dataset.dataset.download:
+    value: true  
+  dataset.train_batch_size:
+    values: [16,32]
+  dataset.val_batch_size:
+    value: 1
+  dataset.test_batch_size:
+    value: 1
+  dataset.num_workers:
+    value: 0
+
+  exp.seed:
+    value: 1
+  exp.run_func._target_:
+    value: experiment.run_training
+
+  ### Fabric setup
+  fabric.accelerator:
+    value: gpu
+
+  ### Method parameters
+  method._partial_:
+    value: True
+  method._target_:
+    value: method.Composer
+
+  method.plugins.0._target_:
+    value: method.AffineNN
+  method.plugins.0.optimize_bounds:
+    value: False
+  method.plugins.0.gradient_iter:
+    value: 0
+  method.plugins.0.lr:
+    value: null
+
+  ### Network parameters
+  network._target_: 
+    value: network.DMLarge
+  network.in_channels:
+    value: 1
+  network.dim_out:
+    value: 10
+  network.input_width:
+    value: 28
+  network.input_height:
+    value: 28
+
+  ### Training parameters
+  training.warmup_epochs:
+    value: 10
+  training.schedule_epochs_after_warmup:
+    value: 50
+  training.epochs:
+    value: 200
+  training.lr:
+    value: 5e-4
+  training.use_scheduler:
+    values: [True, False]
+  training.kappa_end:
+    values: [0.5, 0.0]
+  training.eps_train:
+    value: 0.4
+  training.eps_test:
+    value: 0.2
+  training.n_steps:
+    value: 4
+
+  ### W&B logging
+  wandb.entity:
+    value: ${oc.env:WANDB_ENTITY}
+  wandb.project:
+    value: ${oc.env:WANDB_PROJECT}
+
+command:
+  - ${env}
+  - python
+  - src/main.py
+  - --config-name
+  - training.yaml
+  - ${args_no_hyphens}
